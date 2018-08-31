@@ -8,6 +8,8 @@ import 'package:rxdart/src/observables/replay_observable.dart';
 import 'package:rxdart/streams.dart';
 import 'package:rxdart/transformers.dart';
 
+typedef VoidFunc CreateStream<T>(StreamController<T> subscription);
+
 /// A wrapper class that extends Stream. It combines all the Streams and
 /// StreamTransformers contained in this library into a fluent api.
 ///
@@ -79,6 +81,13 @@ class Observable<T> extends Stream<T> {
   final Stream<T> _stream;
 
   Observable(Stream<T> stream) : this._stream = stream;
+
+  factory Observable.create(CreateStream<T> createStream) {
+    final StreamController<T> controller = StreamController<T>();
+    controller.onListen = () => controller.onCancel = createStream(controller);
+
+    return Observable<T>(controller.stream);
+  }
 
   /// Deprecated: please use [Observable.race].
   ///
