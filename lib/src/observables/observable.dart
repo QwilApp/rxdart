@@ -1539,6 +1539,12 @@ class Observable<T> extends Stream<T> {
   Observable<T> doOnResume(void onResume()) =>
       transform(new DoStreamTransformer<T>(onResume: onResume));
 
+  Observable<T> finalize(void finalize()) =>
+      transform(new DoStreamTransformer<T>(
+        onDone: finalize,
+        onError: (dynamic e, StackTrace s) => finalize(),
+      ));
+
   @override
   AsObservableFuture<S> drain<S>([S futureValue]) =>
       new AsObservableFuture<S>(_stream.drain(futureValue));
