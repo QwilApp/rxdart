@@ -8,7 +8,7 @@ import 'package:rxdart/src/observables/replay_observable.dart';
 import 'package:rxdart/streams.dart';
 import 'package:rxdart/transformers.dart';
 
-typedef VoidFunc CreateStream<T>(Sink<T> sink);
+typedef VoidFunc CreateStream<T>(EventSink<T> sink);
 
 /// A wrapper class that extends Stream. It combines all the Streams and
 /// StreamTransformers contained in this library into a fluent api.
