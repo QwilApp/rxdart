@@ -63,7 +63,10 @@ class RetryWhenStream<T> extends Stream<T> {
   final StreamFactory<T> streamFactory;
   final RetryWhenStreamFactory retryWhenFactory;
   StreamController<T> controller;
+
   StreamSubscription<T> subscription;
+  StreamSubscription<void> sub;
+  
   bool _isUsed = false;
   List<ErrorAndStacktrace> _errors = <ErrorAndStacktrace>[];
 
@@ -85,7 +88,10 @@ class RetryWhenStream<T> extends Stream<T> {
       onPause: ([Future<dynamic> resumeSignal]) =>
           subscription.pause(resumeSignal),
       onResume: () => subscription.resume(),
-      onCancel: () => subscription.cancel(),
+      onCancel: () {
+        sub?.cancel();
+        subscription.cancel();
+      }
     );
 
     return controller.stream.listen(
@@ -102,7 +108,6 @@ class RetryWhenStream<T> extends Stream<T> {
       onError: (dynamic e, StackTrace s) {
         subscription.cancel();
 
-        StreamSubscription<void> sub;
         sub = retryWhenFactory(e, s).listen(
           (dynamic event) {
             sub.cancel();
