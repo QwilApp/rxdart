@@ -6,10 +6,6 @@ import 'package:rxdart/src/streams/utils.dart';
 /// Stream when the notifier emits a new value. If the source Stream
 /// emits an error or it completes, the Stream terminates.
 ///
-/// If the [retryWhenFactory] emits an error a [RetryError] will be
-/// thrown. The RetryError will contain all of the [Error]s and
-/// [StackTrace]s that caused the failure.
-///
 /// ### Basic Example
 /// ```dart
 /// new RetryWhenStream<int>(
@@ -68,7 +64,6 @@ class RetryWhenStream<T> extends Stream<T> {
   StreamSubscription<void> sub;
   
   bool _isUsed = false;
-  List<ErrorAndStacktrace> _errors = <ErrorAndStacktrace>[];
 
   RetryWhenStream(this.streamFactory, this.retryWhenFactory);
 
@@ -111,15 +106,11 @@ class RetryWhenStream<T> extends Stream<T> {
         sub = retryWhenFactory(e, s).listen(
           (dynamic event) {
             sub.cancel();
-            _errors.add(new ErrorAndStacktrace(e, s));
             retry();
           },
           onError: (dynamic e, StackTrace s) {
             sub.cancel();
-            controller.addError(new RetryError(
-              'Received an error after attempting to retry.',
-              _errors..add(new ErrorAndStacktrace(e, s)),
-            ));
+            controller.addError(e, s);
             controller.close();
           },
         );
